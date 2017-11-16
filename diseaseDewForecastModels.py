@@ -107,41 +107,71 @@ class diseasePredictor(object):
         weather factor and run each disease prediction.  Store values for each 
         '''
         miniRingOutput = []
+        pythiumBlightOutput = []
+        dollarSpotOutput = []
+        largePatchOutput = []
+        brownPatchOutput = []
+        grayLeafSpotOutput = []
+        anthracnoseOutput = []
+        #springDeadSpotOutput = []
         for i in range(len(self.humidity)):
             self.miniRing(self.temperatureMin[i], self.temperatureMax[i], self.humidity[i], self.precipProbability[i])
             miniRingOutput.append(self.mr)
+            self.brownPatch(self.temperatureMin[i], self.precipProbability[i])
+            brownPatchOutput.append(self.bp)
+            self.pythiumBlight(self.temperatureMax[i], self.temperatureMin[i], self.humidity[i])
+            pythiumBlightOutput.append(self.pythium)
+            self.dollarSpot(self.temperatureMax[i], self.temperatureMin[i], self.humidity[i], self.precipProbability[i])
+            dollarSpotOutput.append(self.ds)
+            self.largePatch(self.temperatureMax[i], self.temperatureMin[i], self.humidity[i], self.precipProbability[i])
+            largePatchOutput.append(self.rs)
+            self.grayLeafSpot(self.temperatureMax[i], self.temperatureMin[i], self.humidity[i], self.precipProbability[i])
+            grayLeafSpotOutput.append(self.gls)
+            self.anthracnose(self.temperatureMax[i], self.temperatureMin[i], self.humidity[i], self.precipProbability[i])
+            anthracnoseOutput.append(self.anthrax)
+            #self.springDeadSpot()
+            #springDeadSpot.append(self.sds)
         
         self.miniRingOutput = miniRingOutput    
+        self.brownPatchOutput = brownPatchOutput
+        self.pythiumBlightOutput = pythiumBlightOutput
+        self.dollarSpotOutput = dollarSpotOutput
+        self.largePatchOutput = largePatchOutput
+        self.grayLeafSpotOutput = grayLeafSpotOutput
             
-    def pythiumBlight(self):
+    def pythiumBlight(self, maxT, minT, hum):
+        '''pythiumBlight works off of two factors-- maximum daily temperature 
+        and average humidity.  Maxiumum temperature is the primary factor and
+        humidity is secondary factor
+        '''
 
-        if self.maxT >= 34:
-            if self.hum >=60:
+        if maxT >= 34:
+            if hum >=60:
                 pythium = 'High'
-            elif self.hum < 60:
+            elif hum < 60:
                 pythium = 'Moderate'
-        elif self.maxT < 34 and self.minT >= 23:
-            if self.hum >= 60:
+        elif maxT < 34 and minT >= 23:
+            if hum >= 60:
                 pythium = 'Mild'
-            elif self.hum < 60:
+            elif hum < 60:
                 pythium = 'Low'
         else:
             pythium = 'Not Active'
             
         self.pythium = pythium
         
-    def dollarSpot(self):
+    def dollarSpot(self, maxT, minT, hum, precip):
 
-        if self.maxT <= 30 and self.minT >= 15:
+        if maxT <= 30 and minT >= 15:
             ds = 'Low'
             if self.dew >=20:
-                if self.hum >=60 and self.precip > 40:
+                if hum >=60 and precip > 40:
                     ds = 'High'
                 else:
                     ds= 'Moderate'
                 
             elif self.dew < 20:
-                if self.hum >=60:
+                if hum >=60:
                     ds = 'Mild'
                 else:
                     ds = "Low"
@@ -150,7 +180,7 @@ class diseasePredictor(object):
         
         self.ds = ds
             
-    def largePatch(self):
+    def largePatch(self, maxT, minT, hum, precip):
         '''Large Patch is a model built for Rhizoctonia solani development on 
         warm-season turfgrass.  A sister model (brownPatch) is for cool-season
         grasses.
@@ -158,12 +188,12 @@ class diseasePredictor(object):
         and fall on warm-season grasses. High leaf wetness and humidity.
         '''
         
-        if self.maxT <= 26.5 and self.minT >= 13:
-            if self.hum > 60 and self.dew >= 20 and self.precip > 0.4:
+        if maxT <= 26.5 and minT >= 13:
+            if hum > 60 and self.dew >= 20 and precip > 0.4:
                 rs = 'High'
-            elif self.hum > 60 and self.dew >= 20 and self.precip < 0.4:
+            elif hum > 60 and self.dew >= 20 and precip < 0.4:
                 rs = 'Moderate'
-            elif self.hum > 50 and self.dew <= 20 and self.precip < 0.4:
+            elif hum > 50 and self.dew <= 20 and precip < 0.4:
                 rs = 'Mild'
             else:
                 rs = 'Low'
@@ -172,7 +202,7 @@ class diseasePredictor(object):
             
         self.rs = rs
         
-    def brownPatch(self):
+    def brownPatch(self, minT, precip):
         '''Model for rhizoctonia solani on cool-season turfgrass.  According to UGA
         temps below 80F with continual wetness for 48h.
         According to GroundsMag article: Temps above 85F, nighttime temps above 60F.  
@@ -180,12 +210,12 @@ class diseasePredictor(object):
         Purdue: Nighttime temps above 65F with leaf wetness for >= 10 h.
         '''
         
-        if self.minT > 18:
-            if self.dew > 20 and self.precip >= 40:
+        if minT > 18:
+            if self.dew > 20 and precip >= 40:
                 bp = 'High'
             else:
                 bp = 'Moderate'
-        elif self.minT > 15:
+        elif minT > 15:
             if self.dew > 20:
                 bp = "Mild"
             else:
@@ -203,14 +233,14 @@ class diseasePredictor(object):
         Persumed that fall is more prevalent than spring.
         '''
         
-        if self.minT <= 18.3 and self.maxT >= 26.6:
-            if self.hum >= 60 and self.precip >= 40:
+        if minT <= 18.3 and maxT >= 26.6:
+            if hum >= 60 and precip >= 40:
                mr = "High"
-            elif self.hum > 60:
+            elif hum > 60:
                mr = "Moderate"
             else:
                mr = "Mild"
-        elif self.minT <=21.5 and self.maxT >= 26:
+        elif minT <=21.5 and maxT >= 26:
             mr = "Low"
         else:
             mr = "Not Active"
@@ -224,7 +254,7 @@ class diseasePredictor(object):
         '''
         pass
         
-    def grayLeafSpot(self):
+    def grayLeafSpot(self, maxT, minT, hum, precip):
         '''Daytime temps between 80-90 F night time temps between above 65 F.  
         Extended hot, humid, rainy conditions are more favorable.  Most susceptible:
             St. Aug, P. rye, bermudagrass, centipede, bent, some fescues.
@@ -246,7 +276,7 @@ class diseasePredictor(object):
             
         self.gls = gls
         
-    def anthracnose(self):
+    def anthracnose(self, maxT, minT, hum, precip):
         '''Night time temperatures > 75 F and leaf wetness > 10 h.  Some info from 
         UGA, Penn State, NC State
         '''
@@ -266,12 +296,33 @@ class diseasePredictor(object):
         self.anthrax = anthrax
         
         
-    
+    def springDeadSpot(self):
+        '''Daily avarage soil temp at 65 F is best for growth.  So probably need
+        between 55 to 75 F
+        if self.maxT 24:
+            if self.hum > 60 and self.maxT > 32 and self.precip > 40:
+                anthrax = 'High'
+            elif self.hum > 60 and self.maxT > 32 and self.precip < 40:
+                anthrax = 'Moderate'
+            elif self.hum > 60 and self.maxT < 32 and self.precip < 40:
+                anthrax = 'Mild'
+            else:
+                anthrax = 'Low'
+        else:
+            anthrax = "Not Active"
+        
+        self.anthrax = anthrax
+        
+        '''
+        pass
 
 api_key = "feae2be941ef3a658195cb8356696650"
 
 lat = 32.6099 # Auburn
 lon = -85.4808
+
+#lat = 26.9506 # Tampa
+#lon = -82.4572
 
 #lat = 40.7934  # State College
 #lon = -77.8600
@@ -316,30 +367,37 @@ auburn.dewPredictor()
 print auburn.dewPresence
 #print auburn.dewPrediction 
 
-print "------------MiniRing-------------"
-auburn.miniRing(auburn.minT, auburn.maxT, auburn.hum, auburn.precip)
-print auburn.mr
-print "------------GrayLeafSpot-----------------"
-auburn.grayLeafSpot()
-print auburn.gls
-print "---------Warm-Season LargePatch-------------"
-auburn.largePatch()
-print auburn.rs
-print "--------------DollarSpot-------------------"
-auburn.dollarSpot()
-print auburn.ds 
-print "--------------Anthracnose-----------------"
-auburn.anthracnose()
-print auburn.anthrax
-print "-------------Pythium-----------------"
-auburn.pythiumBlight()
-print auburn.pythium
-print "-----------Cool-Season BrownPatch------------"
-auburn.brownPatch()
-print auburn.bp
+# print "------------MiniRing-------------"
+# auburn.miniRing(auburn.minT, auburn.maxT, auburn.hum, auburn.precip)
+# print auburn.mr
+# print "------------GrayLeafSpot-----------------"
+# auburn.grayLeafSpot()
+# print auburn.gls
+# print "---------Warm-Season LargePatch-------------"
+# auburn.largePatch()
+# print auburn.rs
+# print "--------------DollarSpot-------------------"
+# auburn.dollarSpot()
+# print auburn.ds 
+# print "--------------Anthracnose-----------------"
+# auburn.anthracnose()
+# print auburn.anthrax
+# print "-------------Pythium-----------------"
+# auburn.pythiumBlight()
+# print auburn.pythium
+# print "-----------Cool-Season BrownPatch------------"
+# auburn.brownPatch()
+# print auburn.bp
 
 #print auburn.daily[0].d['actualTemperature']
 
 print "-----------Week Disease Forecast--------------"
 auburn.diseaseForecast()
 print auburn.miniRingOutput
+
+print auburn.miniRingOutput    
+print auburn.brownPatchOutput
+print auburn.pythiumBlightOutput
+print auburn.dollarSpotOutput
+print auburn.largePatchOutput
+print auburn.grayLeafSpotOutput
